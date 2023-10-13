@@ -1,0 +1,56 @@
+body {
+  --red: #db2b39;
+  --dark-blue: #29335c;
+  --orange: #f3a712;
+  --orange-light: #f0cea0;
+  --blue: #29335c;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body > .main {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+
+body > .main > * {
+  flex: 1;
+  display: flex;
+  background-color: black;
+  color: white;
+  flex-direction: column;
+}
+
+footer {
+  color: white;
+  text-align: center;
+  background-color: black;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+}

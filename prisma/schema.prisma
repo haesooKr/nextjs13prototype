@@ -1,0 +1,34 @@
+datasource db {
+  provider = "cockroachdb"
+  url      = "postgresql://haesoo:t-KcTjUiETMUh2pYz8anfg@haesoo-11951.7tt.cockroachlabs.cloud:26257/haesoodb?schema=public"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model user {
+  id        String    @id @unique @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      String?   @default("user")
+  photo     String?   @default("default.png")
+  verified  Boolean?  @default(false)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model message {
+  code           String // 메시지코드
+  language       String // 언어코드
+  category       String // 메시지분류코드
+  content        String? // 메시지내용
+  createdBy   String // 등록사용자ID
+  createdAt DateTime? @default(now()) // 등록일시
+  updatedBy     String // 수정사용자ID
+  updatedAt   DateTime? @default(now()) // 수정일시
+
+  // 프라이머리 키 설정
+  @@id([code, language])
+}

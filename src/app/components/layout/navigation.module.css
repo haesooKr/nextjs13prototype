@@ -1,0 +1,130 @@
+.logo {
+  margin-left: 15px;
+}
+
+.navContainer header {
+  background-color: #d5273e;
+  position: relative;
+  height: 50px;
+}
+
+.menuBtn {
+  height: 30px;
+  width: 30px;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  z-index: 101;
+}
+
+.menuBtn > span {
+  background-color: #fff;
+  border-radius: 1px;
+  height: 2px;
+  width: 100%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -1px 0 0 -15px;
+  transition: height 100ms;
+}
+
+.menuBtn > span:after,
+.menuBtn > span:before {
+  content: "";
+  background-color: #fff;
+  border-radius: 1px;
+  height: 2px;
+  width: 100%;
+  position: absolute;
+  left: 50%;
+  margin-left: -15px;
+  transition: all 200ms;
+}
+
+.menuBtn > span:after {
+  top: -7px;
+}
+
+.menuBtn > span:before {
+  bottom: -7px;
+}
+
+.menuBtn.act > span {
+  height: 0;
+}
+
+.menuBtn.act > span:after,
+.menuBtn.act > span:before {
+  background-color: #fff;
+  top: 1px;
+}
+
+.menuBtn.act > span:after {
+  transform: rotate(45deg);
+}
+
+.menuBtn.act > span:before {
+  transform: rotate(-45deg);
+}
+
+.mainMenu {
+  background-color: black;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  width: 100%; /* 변경된 부분: 너비를 100%로 설정 */
+  height: 100vh;
+  display: table;
+  text-align: center;
+  opacity: 0;
+  transition: all 500ms cubic-bezier(0.68, 0, 0.265, 1);
+  transform: scale(0);
+}
+
+.mainMenu.act {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mainMenu ul li {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mainMenu ul {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.mainMenu li {
+  padding: 8px 0;
+}
+
+.mainMenu a {
+  color: #fff;
+  display: inline-block;
+  font-size: 1.5rem;
+}
+
+.mainMenu span {
+  color: #fff;
+  display: inline-block;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.mainMenu a:hover {
+  color: var(--blue-color);
+  display: inline-block;
+  font-size: 1.7rem;
+  transition: all 500ms cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.mainMenu span:hover {
+  color: var(--blue-color);
+  display: inline-block;
+  font-size: 1.7rem;
+  transition: all 500ms cubic-bezier(0.075, 0.82, 0.165, 1);
+}

@@ -1,0 +1,9 @@
+JWT_SECRET_KEY=my_ultra_secure_jwt_secret_key
+JWT_EXPIRES_IN=60
+
+
+REDIS_URL=redis://localhost:6379
+ACCESS_TOKEN_SECRET=access_token_secret_haesoo_94_@
+REFRESH_TOKEN_SECRET=refresh_token_secret_haesoo_94_@
+ACCESS_TOKEN_EXPIRY=3600
+REFRESH_TOKEN_EXPIRY=302400
