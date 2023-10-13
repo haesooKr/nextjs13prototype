@@ -6,5 +6,7 @@
 
 4. global.css에 flex layout 참고.
 
+[] ReponseHandler 모두 적용 messages/management/page.tsx에 있음.
+
 
 

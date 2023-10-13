@@ -1,0 +1,17 @@
+// reponseHandler 중요함!!!!!!!!!!!!!!!
+// function responseHandler(
+//   response: JSONResponse,
+//   router: AppRouterInstance,
+//   cb: Function
+// ) {
+//   if (response.status === "success") {
+//     router.push("/messages");
+//   } else if (response.status === "unauthorized") {
+//     // delete global state user
+//     router.push("/login?unauthorized=true");
+//   } else {
+//     alert("FAIL");
+//   }
+
+//   cb();
+// }

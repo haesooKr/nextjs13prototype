@@ -40,10 +40,13 @@ export default function Navigation() {
             {user && user.role === "admin" && (
               <>
                 <li onClick={toggleMenu}>
-                  <Link href="/messages/addMessage">Admin</Link>
+                  <Link href="/messages/management">Admin</Link>
                 </li>
                 <li onClick={toggleMenu}>
-                  <Link href="/messages">Messages</Link>
+                  <Link href="/messages">Messages (server)</Link>
+                </li>
+                <li onClick={toggleMenu}>
+                  <Link href="/admin">Messages (client)</Link>
                 </li>
               </>
             )}

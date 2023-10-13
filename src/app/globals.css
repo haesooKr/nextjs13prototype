@@ -54,3 +54,20 @@ input {
 a {
   text-decoration: none;
 }
+
+table {
+  display: block;
+  overflow: auto;
+  border-collapse: collapse;
+}
+
+table tr:first-child td {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+td {
+  font-size: 0.9rem;
+  border: 2px solid var(--red);
+  padding: 4px 8px;
+}
