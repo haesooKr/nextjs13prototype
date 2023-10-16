@@ -1,5 +1,9 @@
+"use client";
+
 import { useRef, useState } from "react";
 import styles from "./tableHS.module.css";
+import "react-virtualized/styles.css";
+import { AutoSizer, Column, Table } from "react-virtualized";
 
 export default function TableGenerator(props: any) {
   const inputRef = useRef<any>();
@@ -17,58 +21,7 @@ export default function TableGenerator(props: any) {
     return <></>;
   }
 
-  function htmlGenerator(data: any) {
-    if (data.constructor === Object && Object.keys(data).length === 0) {
-      return <></>;
-    }
-
-    return data.map((row: any, rowIndex: any) => (
-      <tr key={rowIndex}>
-        {columns.map((column, columnIndex) => (
-          <td
-            key={columnIndex}
-            style={column.MinWidth ? { minWidth: column.MinWidth } : {}}
-            onClick={(e) => handleRowClick(e, rowIndex, column.Header)}
-            data-row={rowIndex + 1}
-            data-column={numberToExcelColumn(columnIndex)}
-            className={rowIndex > 100 ? styles.hidden : undefined}
-          >
-            {row[column.Header]}
-          </td>
-        ))}
-      </tr>
-    ));
-  }
-
-  const handleKeyPress = (event: any) => {
-    data[activeRow][activeColumn] = event.target.value;
-  };
-
-  const handleRowClick = (e: any, row: any, column: any) => {
-    setActiveInput(true);
-    const tr = e.currentTarget;
-    // const rect = tr.getBoundingClientRect();
-
-    // Set the position and size of the input element based on the clicked <tr>
-
-    if (inputRef.current != null) {
-      inputRef.current.focus();
-      // inputRef.current.style.width = `${rect.width}px`;
-      // inputRef.current.style.height = `${rect.height}px`;
-      // inputRef.current.style.top = `${rect.top - 50}px`;
-      // // [TODO] 일단 위의 navigation bar때문에 50이 더해지는데 이 문제에 대해서 해결필요.
-      // inputRef.current.style.left = `${rect.left}px`;
-
-      // // Make the input element visible
-      // inputRef.current.style.display = "block";
-      // inputRef.current.style.zIndex = 999;
-
-      // setActiveRow(row);
-      // setActiveColumn(column);
-    }
-
-    console.log(data[row][column]);
-  };
+  const colWidth = 100;
 
   const columns = [
     { Header: "code", Type: "text", MinWidth: "150px", Editable: true },
@@ -81,32 +34,77 @@ export default function TableGenerator(props: any) {
     { Header: "updatedAt", Type: "text", MinWidth: "150px" },
   ];
 
+  if (data.constructor === Object && Object.keys(data).length === 0) {
+    return <></>;
+  }
+
   return (
-    <div className={styles.tableHS}>
-      <div className={styles.focusedCursor}>
-        <input ref={inputRef} onKeyDown={handleKeyPress}></input>
-      </div>
-      <table>
-        <tbody>
-          <tr>
-            {columns.map((column, index) => (
-              <td key={index} style={{ minWidth: column.MinWidth }}>
-                {column.Header}
-              </td>
-            ))}
-          </tr>
-          {htmlGenerator(data)}
-        </tbody>
-      </table>
+    <div className={styles.tableContainer}>
+      <AutoSizer disableHeight>
+        {({ width }) => (
+          <Table
+            width={width}
+            height={400}
+            headerHeight={20}
+            rowHeight={30}
+            rowCount={data.length}
+            rowGetter={({ index }) => data[index]}
+            rowRenderer={({ key, index, style }) => {
+              const rowData = data[index];
+
+              const rowStyle = {
+                overflow: "hidden",
+                flex: `0 1 ${colWidth}px`,
+              };
+
+              return (
+                <div
+                  key={key}
+                  className={"ReactVirtualized__Table__row"}
+                  aria-rowindex={1}
+                  aria-label="row"
+                  tabIndex={0}
+                  role="row"
+                  style={style}
+                >
+                  {columns.map((column) => {
+                    return (
+                      <div
+                        key={column.Header}
+                        className={"ReactVirtualized__Table__rowColumn"}
+                        style={rowStyle}
+                      >
+                        <input
+                          onClick={(e) => console.dir(e)}
+                          onChange={(e) => console.log(e.target.value)}
+                          value={rowData[column.Header]}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            }}
+          >
+            {columns.map((column, key) => {
+              return (
+                <Column
+                  key={key}
+                  label={column.Header}
+                  dataKey={column.Header}
+                  width={colWidth}
+                />
+              );
+            })}
+          </Table>
+        )}
+      </AutoSizer>
     </div>
   );
 }
 
-function numberToExcelColumn(n: number) {
-  let result = "";
-  while (n >= 0) {
-    result = String.fromCharCode(65 + (n % 26)) + result;
-    n = Math.floor(n / 26) - 1;
-  }
-  return result;
-}
+/*<div style="height: 30px; left: 0px; position: absolute; top: 0px; width: 1093px; 
+overflow: hidden; padding-right: 17px;" aria-rowindex="1" aria-label="row" tabindex="0" 
+class="ReactVirtualized__Table__row" role="row">
+<div aria-colindex="1" class="ReactVirtualized__Table__rowColumn" role="gridcell" title="1CES240" style="overflow: hidden; flex: 0 1 100px;">1CES240</div>
+*/

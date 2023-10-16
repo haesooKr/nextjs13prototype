@@ -23,11 +23,10 @@ function MessageManagementPage() {
   }, []);
 
   return (
-    <>
+    <div>
       <TableGenerator data={messages} />
-    </>
+    </div>
   );
 }
 
 export default MessageManagementPage;
-
