@@ -2,6 +2,7 @@
 
 import TableGenerator from "@/app/components/tableHS/tableHS";
 import responseHandler from "@/lib/response";
+import styles from "./management.module.css";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -25,7 +26,7 @@ function MessageManagementPage() {
   }, []);
 
   return (
-    <div>
+    <div className={styles.management}>
       <TableGenerator data={messages} />
     </div>
   );

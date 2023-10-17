@@ -1,5 +1,5 @@
-.container {
-  align-self: center;
+.TableAutoSizerContainer {
+  flex: 1 1 auto;
 }
 
 .inputBox {

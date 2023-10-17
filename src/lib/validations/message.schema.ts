@@ -7,4 +7,20 @@ export const SetMessageSchema = z.object({
   content: z.string({ required_error: "Content is required" }),
 });
 
+export const UpdateMessageSchema = z.object({
+  updatedRow: z.object({
+    code: z.string().optional(),
+    language: z.string().optional(),
+    category: z.string().optional(),
+    content: z.string().optional(),
+  }),
+  originalRow: z.object({
+    code: z.string(),
+    language: z.string(),
+    category: z.string(),
+    content: z.string(),
+  }),
+});
+
 export type SetMessageInput = z.infer<typeof SetMessageSchema>;
+export type UpdateMessageInput = z.infer<typeof UpdateMessageSchema>;
