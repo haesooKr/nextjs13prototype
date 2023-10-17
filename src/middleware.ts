@@ -43,12 +43,10 @@ export async function middleware(req: NextRequest) {
       refreshToken = req.cookies.get("rft")?.value;
     }
 
-    console.log(req.cookies.get("logged-in"));
-    console.log(req.cookies.get("JSESSIONID"));
-    console.log("access & refresh: ", accessToken, refreshToken);
-
     if (!accessToken && !refreshToken) {
-      return getNextResponse(401, "Not xx authenticated");
+      console.log("referer", req.referrer);
+      const response = getNextResponse(401, "unauthorized");
+      return response;
     }
 
     if (accessToken) {
@@ -65,18 +63,12 @@ export async function middleware(req: NextRequest) {
       }>(refreshToken, getEnvVariable("REFRESH_TOKEN_SECRET"));
     }
 
-    console.log("ACT VERIFIED: ", ACTVerfiy.verified);
-    console.log("RFT VERIFIED: ", RFTVerify.verified);
-
-    if (ACTVerfiy.verified && RFTVerify.verified) {
-      console.log(req.url);
-      console.log(req.nextUrl);
-      console.log("둘 다 사용가능");
+    if (ACTVerfiy && ACTVerfiy.verified && RFTVerify && RFTVerify.verified) {
       return NextResponse.next();
-    } else if (ACTVerfiy.verified) {
+    } else if (ACTVerfiy && ACTVerfiy.verified) {
       console.log("RFT 재발급");
       return issueNewRefreshToken(tokens, req);
-    } else if (RFTVerify.verified) {
+    } else if (RFTVerify && RFTVerify.verified) {
       // TODO: ACT 재발급 (재발급전에 RFT redis 체크 필요.)
       console.log("RFT REDIS Verfiy 실패");
       const RftRedis = await redisCheck(req, RFTVerify.jti);
@@ -86,7 +78,6 @@ export async function middleware(req: NextRequest) {
         return destroyAllCookies(req);
       }
     } else {
-      console.log("UNAHTORIZED!!!");
       return destroyAllCookies(req);
     }
   } else {
@@ -203,7 +194,10 @@ const issueNewAccessToken = async (tokens: any, req: NextRequest) => {
 };
 
 const destroyAllCookies = (req: NextRequest) => {
-  const response = getNextResponse(401, "unauthorized");
+  console.log("CALLED");
+  const response = getNextResponse(401, "unauthorized", {
+    callbackUrl: encodeURIComponent(req.nextUrl.pathname),
+  });
 
   response.cookies.set({
     name: "act",
