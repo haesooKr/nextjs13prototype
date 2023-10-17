@@ -44,7 +44,6 @@ export async function middleware(req: NextRequest) {
     }
 
     if (!accessToken && !refreshToken) {
-      console.log("referer", req.referrer);
       const response = getNextResponse(401, "unauthorized");
       return response;
     }
@@ -69,7 +68,6 @@ export async function middleware(req: NextRequest) {
       console.log("RFT 재발급");
       return issueNewRefreshToken(tokens, req);
     } else if (RFTVerify && RFTVerify.verified) {
-      // TODO: ACT 재발급 (재발급전에 RFT redis 체크 필요.)
       console.log("RFT REDIS Verfiy 실패");
       const RftRedis = await redisCheck(req, RFTVerify.jti);
       if (RftRedis) {
