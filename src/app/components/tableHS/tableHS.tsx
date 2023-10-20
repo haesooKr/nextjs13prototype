@@ -14,7 +14,9 @@ export default function TableGenerator(props: any) {
 
   const [selectedRow, setSelectedRow] = useState<number>(-1);
   const [selectedColumn, setSelectedColumn] = useState<string>("");
-  const [updatedRows, setUpdatedRows] = useState<{ [key: string]: number }>({});
+  const [updatedRows, setUpdatedRows] = useState<{
+    [key: number]: { [key: string]: string };
+  }>({});
   const [data, setData] = useState<Array<{ [key: string]: string }>>([]);
   const [originalData, setOriginalData] = useState<
     Array<{ [key: string]: string }>
@@ -85,8 +87,30 @@ export default function TableGenerator(props: any) {
             },
           }));
         } else {
+          const newData = [...data];
+          newData[selectedRow][selectedColumn] = currentInputValue;
+
+          setData(newData);
+
+          if (updatedRows[selectedRow][selectedColumn]) {
+            const newUpdatedRows = JSON.parse(JSON.stringify(updatedRows));
+
+            console.log("DELETE: ", newUpdatedRows);
+            delete newUpdatedRows[selectedRow][selectedColumn];
+
+            for (const key in newUpdatedRows) {
+              if (
+                newUpdatedRows[key] &&
+                Object.keys(newUpdatedRows[key]).length === 0
+              ) {
+                delete newUpdatedRows[key];
+              }
+            }
+          }
           // TODO: 만약 값이 original과 같다면 data와 updatedRows에 해당하는 값 리셋
         }
+        console.log(updatedRows);
+        console.log(data);
       }
     }
   }
@@ -235,7 +259,7 @@ export default function TableGenerator(props: any) {
               onChange={handleOnChange}
               onBlur={handleBlurChange}
             />
-          </div>
+          </div> 
         </div>
       </div>
       <button onClick={handleClickSave}>저장</button>

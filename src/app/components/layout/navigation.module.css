@@ -1,11 +1,14 @@
-.logo {
-  margin-left: 15px;
-}
-
 .navContainer header {
+  display: flex;
   background-color: #d5273e;
+  color: white;
   position: relative;
   height: 50px;
+}
+
+.navContainer h2 {
+  margin-left: 10px;
+  align-self: center;
 }
 
 .menuBtn {

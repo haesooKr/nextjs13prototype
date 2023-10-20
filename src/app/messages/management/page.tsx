@@ -1,6 +1,6 @@
 "use client";
 
-import TableGenerator from "@/app/components/tableHS/tableHS";
+import TableGenerator from "@/app/components/tableTest/tableTest";
 import responseHandler from "@/lib/response";
 import styles from "./management.module.css";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";

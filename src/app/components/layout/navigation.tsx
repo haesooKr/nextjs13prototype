@@ -18,7 +18,7 @@ export default function Navigation() {
   return (
     <div className={styles.navContainer}>
       <header>
-        <h1>웹사이트</h1>
+        <h2>Demultiplexing</h2>
         <a
           href="#"
           className={`${styles.menuBtn} ${menuToggle ? `${styles.act}` : ""}`}
