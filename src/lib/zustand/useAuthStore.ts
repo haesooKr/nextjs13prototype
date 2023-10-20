@@ -33,7 +33,7 @@ const useAuthStore = create<AuthState>()(
               });
 
               const data = await res.json();
-              if (data.message !== "success") {
+              if (data.status !== "success") {
                 state.user = null;
               }
             }
