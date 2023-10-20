@@ -21,7 +21,7 @@ export default function AllMessagesPage() {
 
   return (
     <>
-      <button onClick={() => fetchMessages(setMessages)}>로딩</button>
+      <button onClick={() => fetchMessages(setMessages)}>조회</button>
 
       <ul>
         {messages &&

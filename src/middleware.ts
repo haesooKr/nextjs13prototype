@@ -4,6 +4,7 @@ import { signJWT, verifyJWT } from "@/lib/token";
 import { v4 as uuidv4 } from "uuid";
 
 export async function middleware(req: NextRequest) {
+  console.log("미들웨어 호출");
   if (
     req.nextUrl.pathname.startsWith("/api/auth/login") ||
     req.nextUrl.pathname.includes("unprotected")
@@ -11,7 +12,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  let loggedIn: string | undefined;
   let accessToken: string | undefined;
   let refreshToken: string | undefined;
   const tokens = {
@@ -31,10 +31,6 @@ export async function middleware(req: NextRequest) {
   let RFTVerify: any;
 
   if (req.nextUrl.pathname.startsWith("/api")) {
-    if (req.cookies.has("logged-in")) {
-      loggedIn = req.cookies.get("logged-in")?.value;
-    }
-
     if (req.cookies.has("act")) {
       accessToken = req.cookies.get("act")?.value;
     }
@@ -63,6 +59,7 @@ export async function middleware(req: NextRequest) {
     }
 
     if (ACTVerfiy && ACTVerfiy.verified && RFTVerify && RFTVerify.verified) {
+      console.log("Verfieid");
       return NextResponse.next();
     } else if (ACTVerfiy && ACTVerfiy.verified) {
       console.log("RFT 재발급");
@@ -71,11 +68,14 @@ export async function middleware(req: NextRequest) {
       console.log("RFT REDIS Verfiy 실패");
       const RftRedis = await redisCheck(req, RFTVerify.jti);
       if (RftRedis) {
+        console.log("ACT 재발급");
         return issueNewAccessToken(tokens, req);
       } else {
+        console.log("Destory all cookies");
         return destroyAllCookies(req);
       }
     } else {
+      console.log("Destory all cookies");
       return destroyAllCookies(req);
     }
   } else {
@@ -204,11 +204,6 @@ const destroyAllCookies = (req: NextRequest) => {
   }),
     response.cookies.set({
       name: "rft",
-      value: "",
-      maxAge: -1,
-    }),
-    response.cookies.set({
-      name: "logged-in",
       value: "",
       maxAge: -1,
     });

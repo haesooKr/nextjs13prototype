@@ -95,11 +95,6 @@ export async function POST(req: NextRequest) {
     await Promise.all([
       response.cookies.set(accessTokenCookieOptions),
       response.cookies.set(refreshTokenCookieOptions),
-      response.cookies.set({
-        name: "logged-in",
-        value: "true",
-        maxAge: accessTokenMaxAge,
-      }),
     ]);
 
     return response;

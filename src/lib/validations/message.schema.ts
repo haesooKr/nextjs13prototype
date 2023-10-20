@@ -8,18 +8,22 @@ export const SetMessageSchema = z.object({
 });
 
 export const UpdateMessageSchema = z.object({
-  updatedRow: z.object({
-    code: z.string().optional(),
-    language: z.string().optional(),
-    category: z.string().optional(),
-    content: z.string().optional(),
-  }),
-  originalRow: z.object({
-    code: z.string(),
-    language: z.string(),
-    category: z.string(),
-    content: z.string(),
-  }),
+  updatedRows: z.record(
+    z.object({
+      code: z.string().optional(),
+      language: z.string().optional(),
+      category: z.string().optional(),
+      content: z.string().optional(),
+    })
+  ),
+  originalRows: z.record(
+    z.object({
+      code: z.string(),
+      language: z.string(),
+      category: z.string(),
+      content: z.string(),
+    })
+  ),
 });
 
 export type SetMessageInput = z.infer<typeof SetMessageSchema>;

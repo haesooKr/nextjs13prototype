@@ -4,14 +4,22 @@ import "react-virtualized/styles.css";
 import { AutoSizer, Column, Table } from "react-virtualized";
 import styles from "./tableHS.module.css";
 import { useEffect, useRef, useState } from "react";
+import responseHandler from "@/lib/response";
+import { useRouter } from "next/navigation";
 
 export default function TableGenerator(props: any) {
+  const router = useRouter();
+
   const inputRef = useRef<any>();
 
-  const [selectedRow, setSelectedRow] = useState("");
-  const [selectedColumn, setSelectedColumn] = useState("");
-  const [updatedRows, setUpdatedRows] = useState({});
-  const [originalData, setOriginalData] = useState([]);
+  const [selectedRow, setSelectedRow] = useState<number>(-1);
+  const [selectedColumn, setSelectedColumn] = useState<string>("");
+  const [updatedRows, setUpdatedRows] = useState<{ [key: string]: number }>({});
+  const [data, setData] = useState<Array<{ [key: string]: string }>>([]);
+  const [originalData, setOriginalData] = useState<
+    Array<{ [key: string]: string }>
+  >([]);
+
   const [currentInputValue, setCurrentInputValue] = useState("");
 
   const handleTableScroll = () => {
@@ -28,41 +36,83 @@ export default function TableGenerator(props: any) {
   };
 
   useEffect(() => {
-    setOriginalData(props.data);
-  });
+    if (props.data.length > 0) {
+      setData(JSON.parse(JSON.stringify(props.data)));
+      setOriginalData(JSON.parse(JSON.stringify(props.data)));
+    }
+  }, [props]);
+
+  useEffect(() => {
+    for (let row in updatedRows) {
+      const modifiedRow: HTMLElement | null = document.querySelector(
+        `div[aria-rowindex='${row}']`
+      );
+      if (modifiedRow) {
+        modifiedRow.style.backgroundColor = "red";
+      }
+    }
+  }, [updatedRows]);
 
   function handleOnChange(e: any) {
     setCurrentInputValue(e.target.value);
   }
+
+  function resetUpdatedRows() {
+    for (let row in updatedRows) {
+      const modifiedRow: HTMLElement | null = document.querySelector(
+        `div[aria-rowindex='${row}']`
+      );
+      if (modifiedRow) {
+        modifiedRow.style.removeProperty("backgroundColor");
+      }
+      setUpdatedRows({});
+    }
+  }
+
   function handleBlurChange() {
-    if (selectedRow && selectedColumn) {
-      originalData[selectedRow][selectedColumn] = currentInputValue;
-      setUpdatedRows((prevUpdatedRows: any) => ({
-        ...prevUpdatedRows,
-        [selectedRow]: {
-          ...prevUpdatedRows[selectedRow],
-          [selectedColumn]: currentInputValue,
-        },
-      }));
+    if (selectedRow > -1 && selectedColumn) {
+      if (data) {
+        if (originalData[selectedRow][selectedColumn] !== currentInputValue) {
+          const newData = [...data];
+          newData[selectedRow][selectedColumn] = currentInputValue;
+
+          setData(newData);
+          setUpdatedRows((prevUpdatedRows: any) => ({
+            ...prevUpdatedRows,
+            [selectedRow]: {
+              ...prevUpdatedRows[selectedRow],
+              [selectedColumn]: currentInputValue,
+            },
+          }));
+        } else {
+          // TODO: 만약 값이 original과 같다면 data와 updatedRows에 해당하는 값 리셋
+        }
+      }
     }
   }
 
   const handleClickSave = async () => {
-    for (let row in updatedRows) {
-      const res = await fetch("/api/message/updateMessage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          updatedRow: updatedRows[row],
-          originalRow: originalData[row],
-        }),
-      });
+    const originalRows: { [key: string]: {} } = {};
 
-      const data = await res.json();
-      console.log(data);
+    for (let row in updatedRows) {
+      const rowNum = Number(row);
+      originalRows[rowNum] = originalData[rowNum];
     }
+
+    const res = await fetch("/api/message/updateMessage", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        updatedRows: updatedRows,
+        originalRows: originalRows,
+      }),
+    });
+
+    const response = await res.json();
+    responseHandler(response, router, resetUpdatedRows);
+    console.log(data);
   };
 
   const colWidth = 0;
@@ -78,10 +128,12 @@ export default function TableGenerator(props: any) {
     { Header: "updatedAt", Type: "text", MinWidth: 100 },
   ];
 
-  return originalData.length > 0 ? (
+  return data.length > 0 ? (
     <>
       <div className={styles.TableAutoSizerContainer}>
-        <div> {/* div 두개를 사이에다 넣은 이유는, AutoSizer에서 input이 정확한 위치를 찾기위해서
+        <div>
+          {" "}
+          {/* div 두개를 사이에다 넣은 이유는, AutoSizer에서 input이 정확한 위치를 찾기위해서
                   이런 형식만 작동하기때문에 여러 작업을 거치다가 발견함 (정확한 이유는 아직 찾지못함
               */}
           <div>
@@ -93,16 +145,16 @@ export default function TableGenerator(props: any) {
                   headerHeight={20}
                   rowHeight={30}
                   onScroll={handleTableScroll}
-                  rowCount={originalData.length}
-                  rowGetter={({ index }) => originalData[index]}
+                  rowCount={data.length}
+                  rowGetter={({ index }) => data[index]}
                   rowRenderer={({ key, index, style }) => {
-                    const rowData = originalData[index];
+                    const rowData = data[index];
 
                     return (
                       <div
                         key={key}
                         className={"ReactVirtualized__Table__row"}
-                        aria-rowindex={1}
+                        aria-rowindex={index}
                         aria-label="row"
                         tabIndex={0}
                         role="row"
@@ -128,7 +180,7 @@ export default function TableGenerator(props: any) {
 
                                 if (tr.dataset.column && tr.dataset.row) {
                                   setSelectedColumn(tr.dataset.column);
-                                  setSelectedRow(tr.dataset.row);
+                                  setSelectedRow(Number(tr.dataset.row));
                                 }
 
                                 // Set the position and size of the input element based on the clicked <tr>

@@ -12,33 +12,41 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const body = (await req.json()) as UpdateMessageInput;
     console.log(body);
     const data = UpdateMessageSchema.parse(body);
-    console.log(data);
 
-    await prisma.message.update({
-      where: {
-        code_language: {
-          code: data.originalRow.code,
-          language: data.originalRow.language,
-        },
-      },
-      data: {
-        code: data.updatedRow.code
-          ? data.updatedRow.code
-          : data.originalRow.code,
-        language: data.updatedRow.language
-          ? data.updatedRow.language
-          : data.originalRow.code,
-        category: data.updatedRow.category
-          ? data.updatedRow.category
-          : data.originalRow.category,
-        content: data.updatedRow.content
-          ? data.updatedRow.content
-          : data.originalRow.content,
-      },
+    const updatedRows = data.updatedRows;
+    const originalRows = data.originalRows;
+
+    // Transaction Commit Rollback 자동
+    const transaction = await prisma.$transaction(async (tx) => {
+      for (let key in updatedRows) {
+        await tx.message.update({
+          where: {
+            code_language: {
+              code: originalRows[key].code,
+              language: originalRows[key].language,
+            },
+          },
+          data: {
+            code: updatedRows[key].code
+              ? updatedRows[key].code
+              : originalRows[key].code,
+            language: updatedRows[key].language
+              ? updatedRows[key].language
+              : originalRows[key].code,
+            category: updatedRows[key].category
+              ? updatedRows[key].category
+              : originalRows[key].category,
+            content: updatedRows[key].content
+              ? updatedRows[key].content
+              : originalRows[key].content,
+          },
+        });
+      }
     });
 
     return getNextResponse(200, "successfully updated Message");
   } catch (error) {
+    console.log(error);
     if (error instanceof ZodError) {
       return getNextResponse(400, "validation error", null, error);
     }

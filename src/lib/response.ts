@@ -10,7 +10,7 @@ export default function responseHandler(
   response: JSONResponse,
   router: AppRouterInstance,
   cb: Function,
-  cbv: any
+  cbv: any = null
 ) {
   console.log(response);
 
@@ -27,6 +27,10 @@ export default function responseHandler(
       router.push(`login?unauthorized=true`);
     }
   } else {
-    cb(cbv);
+    if (cbv == null) {
+      cb();
+    } else {
+      cb(cbv);
+    }
   }
 }

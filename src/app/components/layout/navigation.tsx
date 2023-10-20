@@ -5,7 +5,6 @@ import styles from "./navigation.module.css";
 import useStore from "@/lib/zustand/useStore";
 import useAuthStore from "@/lib/zustand/useAuthStore";
 import { useState } from "react";
-import Image from "next/image";
 
 export default function Navigation() {
   const user = useStore(useAuthStore, (state) => state.user);
@@ -19,13 +18,7 @@ export default function Navigation() {
   return (
     <div className={styles.navContainer}>
       <header>
-        <Image
-          src="/Haesoo.png"
-          alt="logo"
-          width={50}
-          height={50}
-          className={styles.logo}
-        />
+        <h1>웹사이트</h1>
         <a
           href="#"
           className={`${styles.menuBtn} ${menuToggle ? `${styles.act}` : ""}`}
@@ -46,7 +39,7 @@ export default function Navigation() {
                   <Link href="/messages">Messages (server)</Link>
                 </li>
                 <li onClick={toggleMenu}>
-                  <Link href="/admin">Messages (client)</Link>
+                  <Link href="/messages/admin">Messages (client)</Link>
                 </li>
               </>
             )}
