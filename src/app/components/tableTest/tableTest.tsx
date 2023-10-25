@@ -1,12 +1,11 @@
 "use client";
 
-import {
-  ChangeEventHandler,
-  KeyboardEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+/*
+스크롤하면서 css가 초기화됨.
+스크롤 시, 이전 페이지 데이터 조회가 불가능함.
+*/
+
+import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { AutoSizer, Column, Table } from "react-virtualized";
 import styles from "./tableTest.module.css";
 import "react-virtualized/styles.css";
@@ -33,9 +32,9 @@ export default function TableGenerator(props: any) {
   const inputRef = useRef<any>();
 
   const [currentValue, setCurrentValue] = useState("");
-  const [cursor, setCursor] = useState<{ row: number; column: string }>({
+  const [cursor, setCursor] = useState<{ row: number; column: number }>({
     row: 0,
-    column: "",
+    column: 0,
   });
   const [multiCursor, setMultiCursor] = useState<
     Array<{ [key: string]: string }>
@@ -61,10 +60,57 @@ export default function TableGenerator(props: any) {
 
     window.addEventListener(`resize`, windowResize);
 
+    window.addEventListener("keydown", function (e) {
+      if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "PageUp" ||
+        e.key === "PageDown"
+      ) {
+        e.preventDefault(); // 기본 스크롤 이벤트를 막습니다.
+      }
+    });
+
     return () => {
       window.removeEventListener(`resize`, windowResize);
+
+      window.addEventListener("keydown", function (e) {
+        if (
+          e.key === "ArrowUp" ||
+          e.key === "ArrowDown" ||
+          e.key === "PageUp" ||
+          e.key === "PageDown"
+        ) {
+          e.preventDefault(); // 기본 스크롤 이벤트를 막습니다.
+        }
+      });
     };
   }, [inputRef]);
+
+  function automove(target: HTMLElement) {
+    console.log(cursor.row, cursor.column);
+    console.log(target);
+
+    inputRef.current.blur();
+
+    const rect = target.getBoundingClientRect();
+
+    const inputElement = inputRef.current;
+
+    // Set the position and size of the input element based on the clicked <tr>
+    inputElement.style.width = `${rect.width}px`;
+    inputElement.style.height = `${rect.height}px`;
+    inputElement.style.top = `${rect.top - 50}px`;
+    inputElement.style.left = `${rect.left}px`;
+
+    setCurrentValue(`${target.innerText}`);
+
+    inputElement.style.display = "block";
+
+    if (target.parentElement) {
+      target.parentElement.focus();
+    }
+  }
 
   const blurInputRef = () => {
     inputRef.current.style.removeProperty("width");
@@ -80,13 +126,13 @@ export default function TableGenerator(props: any) {
   };
   const handleBlurChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { row, column } = cursor;
-    console.log(`row: ${row}, column: ${column}`);
+    const columnHeader = columns[column].Header;
 
     if (row > -1 && column) {
       if (data) {
-        if (data[row][column] !== currentValue) {
+        if (data[row][columnHeader] !== currentValue) {
           const newData = [...data];
-          newData[row][column] = currentValue;
+          newData[row][columnHeader] = currentValue;
 
           setData(newData);
 
@@ -98,44 +144,94 @@ export default function TableGenerator(props: any) {
             updatedElement.parentElement.dataset.status = "U";
           }
           updatedElement.dataset.status = "U";
-          updatedElement.style.backgroundColor = "rgba(255, 0, 132, 0.2)";
-
-          console.log(data[row][column]);
-          console.log(props.data[row][column]);
         }
       }
     }
   };
   const handleClickSave = () => {};
   const handleClickCell = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    inputRef.current.blur();
     const tr = e.currentTarget as HTMLDivElement;
-    const rect = tr.getBoundingClientRect();
 
     if (tr.dataset.column && tr.dataset.row) {
       setCursor({
+        column: Number(tr.dataset.column),
         row: Number(tr.dataset.row),
-        column: tr.dataset.column,
       });
     }
 
-    const inputElement = inputRef.current;
-
-    // Set the position and size of the input element based on the clicked <tr>
-    inputElement.style.width = `${rect.width}px`;
-    inputElement.style.height = `${rect.height}px`;
-    inputElement.style.top = `${rect.top - 50}px`;
-    inputElement.style.left = `${rect.left}px`;
-
-    setCurrentValue(`${tr.innerText}`);
-
-    // Make the input element visible
-    inputElement.style.display = "block";
+    automove(tr);
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "Enter") {
+  const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
+    console.log("KEY DOWN");
+    const inputKeyDown = inputRef.current === document.activeElement;
+
+    if (inputKeyDown && e.key === "Enter") {
       blurInputRef();
+    }
+
+    if (e.key === "ArrowDown") {
+      if (cursor.row < data.length - 1) {
+        const targetRow = cursor.row + 1;
+
+        const updatedElement = document.querySelector(
+          `[data-row="${targetRow}"][data-column="${cursor.column}"]`
+        ) as HTMLElement;
+
+        automove(updatedElement);
+
+        setCursor((prevCursor: any) => ({
+          column: prevCursor.column,
+          row: prevCursor.row + 1,
+        }));
+      }
+    } else if (!inputKeyDown && e.key === "ArrowLeft") {
+      if (cursor.column > 0) {
+        const targetColumn = cursor.column - 1;
+
+        const updatedElement = document.querySelector(
+          `[data-row="${cursor.row}"][data-column="${targetColumn}"]`
+        ) as HTMLElement;
+
+        automove(updatedElement);
+
+        setCursor((prevCursor: any) => ({
+          column: prevCursor.column - 1,
+          row: prevCursor.row,
+        }));
+      }
+    } else if (!inputKeyDown && e.key === "ArrowRight") {
+      if (cursor.column < columns.length - 1) {
+        const targetColumn = cursor.column + 1;
+
+        const updatedElement = document.querySelector(
+          `[data-row="${cursor.row}"][data-column="${targetColumn}"]`
+        ) as HTMLElement;
+
+        automove(updatedElement);
+
+        setCursor((prevCursor: any) => ({
+          column: prevCursor.column + 1,
+          row: prevCursor.row,
+        }));
+      }
+    } else if (e.key === "ArrowUp") {
+      if (cursor.row > 0) {
+        const targetRow = cursor.row - 1;
+
+        const updatedElement = document.querySelector(
+          `[data-row="${targetRow}"][data-column="${cursor.column}"]`
+        ) as HTMLElement;
+
+        automove(updatedElement);
+
+        setCursor((prevCursor: any) => ({
+          column: prevCursor.column,
+          row: prevCursor.row - 1,
+        }));
+      }
+    } else {
+      inputRef.current.focus();
     }
   };
 
@@ -169,11 +265,13 @@ export default function TableGenerator(props: any) {
                           aria-rowindex={index}
                           aria-label="row"
                           data-status={STATUS.ORIGINAL}
+                          onDragStart={(e) => e.preventDefault()}
                           tabIndex={0}
                           role="row"
                           style={style}
+                          onKeyDown={(e) => handleKeyDown(e)}
                         >
-                          {columnData.map((column) => {
+                          {columnData.map((column, i) => {
                             const rowStyle = {
                               overflow: "hidden",
                               flex: `1 1 0`,
@@ -187,9 +285,10 @@ export default function TableGenerator(props: any) {
                                 style={rowStyle}
                                 data-status={STATUS.ORIGINAL}
                                 data-row={index}
-                                data-column={column.Header}
+                                data-column={i}
+                                data-header={column.Header}
                                 onClick={(e) => handleClickCell(e)}
-                                onMouseDown={(e) => e.preventDefault()}
+                                onDragStart={(e) => e.preventDefault()}
                               >
                                 {rowData[column.Header]}
                               </div>
