@@ -8,26 +8,99 @@ generator client {
 }
 
 model user {
-  id        String    @id @unique @default(uuid())
+  id        String     @id @unique @default(uuid())
   name      String
-  email     String    @unique
+  email     String     @unique
   password  String
-  role      String?   @default("user")
-  photo     String?   @default("default.png")
-  verified  Boolean?  @default(false)
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  role      String?    @default("user")
+  photo     String?    @default("default.png")
+  verified  Boolean?   @default(false)
+  posts     post[]
+  postLikes postlike[]
+  comments  comment[]
+  createdAt DateTime?  @default(now())
+  updatedAt DateTime?  @updatedAt
+}
+
+model post {
+  id        String     @id @unique @default(uuid())
+  title     String
+  content   String
+  user      user       @relation(fields: [userId], references: [id])
+  userId    String
+  viewYn    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  postViews postview[]
+  postLikes postlike[]
+  comments  comment[]
+  topicId   String
+  topic     topic      @relation(fields: [topicId], references: [id])
+  postTags  posttag[]
+}
+
+model topic {
+  id    String @id @unique @default(uuid())
+  name  String @unique
+  posts post[]
+}
+
+model tag {
+  id       String    @id @unique @default(uuid())
+  name     String    @unique
+  postTags posttag[]
+}
+
+model posttag {
+  postId String
+  tagId  String
+  post   post   @relation(fields: [postId], references: [id])
+  tag    tag    @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
+model comment {
+  id        String   @id @unique @default(uuid())
+  content   String
+  user      user     @relation(fields: [userId], references: [id])
+  userId    String
+  post      post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([id, userId, postId])
+}
+
+model postview {
+  postId String
+  userId String
+  post   post   @relation(fields: [postId], references: [id])
+
+  @@id([postId, userId])
+  @@unique([postId, userId])
+}
+
+model postlike {
+  postId String
+  userId String
+  post   post   @relation(fields: [postId], references: [id])
+  user   user   @relation(fields: [userId], references: [id])
+
+  @@id([postId, userId])
+  @@unique([postId, userId])
 }
 
 model message {
-  code           String // 메시지코드
-  language       String // 언어코드
-  category       String // 메시지분류코드
-  content        String? // 메시지내용
-  createdBy   String // 등록사용자ID
+  code      String // 메시지코드
+  language  String // 언어코드
+  category  String // 메시지분류코드
+  content   String? // 메시지내용
+  createdBy String // 등록사용자ID
   createdAt DateTime? @default(now()) // 등록일시
-  updatedBy     String // 수정사용자ID
-  updatedAt   DateTime? @default(now()) // 수정일시
+  updatedBy String // 수정사용자ID
+  updatedAt DateTime? @default(now()) // 수정일시
 
   // 프라이머리 키 설정
   @@id([code, language])

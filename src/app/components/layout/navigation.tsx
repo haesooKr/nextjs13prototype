@@ -39,9 +39,14 @@ export default function Navigation() {
             )}
 
             {!user ? (
-              <li onClick={toggleMenu}>
-                <Link href="/login">Sign in</Link>
-              </li>
+              <>
+                <li onClick={toggleMenu}>
+                  <Link href="/login">Sign in</Link>
+                </li>
+                <li onClick={toggleMenu}>
+                  <Link href="/register">Register</Link>
+                </li>
+              </>
             ) : (
               <>
                 <li onClick={toggleMenu}>
