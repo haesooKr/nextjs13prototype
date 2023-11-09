@@ -18,7 +18,7 @@ export default function Navigation() {
   return (
     <div className={styles.navContainer}>
       <header>
-        <h2>Demultiplexing</h2>
+        <h2>grooveware</h2>
         <a
           href="#"
           className={`${styles.menuBtn} ${menuToggle ? `${styles.act}` : ""}`}
@@ -33,13 +33,7 @@ export default function Navigation() {
             {user && user.role === "admin" && (
               <>
                 <li onClick={toggleMenu}>
-                  <Link href="/messages/management">Admin</Link>
-                </li>
-                <li onClick={toggleMenu}>
                   <Link href="/messages">Messages (server)</Link>
-                </li>
-                <li onClick={toggleMenu}>
-                  <Link href="/messages/admin">Messages (client)</Link>
                 </li>
               </>
             )}
