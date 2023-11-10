@@ -1,18 +1,25 @@
-"use client";
-
+import { Post } from "@prisma/client";
 import styles from "./home.module.css";
-import useStore from "@/lib/zustand/useStore";
-import useAuthStore from "@/lib/zustand/useAuthStore";
+import PostList from "./components/posts/postList";
 
-export default function Home() {
-  const user = useStore(useAuthStore, (state) => state.user);
+async function fetchPosts() {
+  const url = "http://localhost:3000/api/unprotected/getPosts";
+
+  const response = await fetch(url, { next: { revalidate: 5 } });
+
+  const data = await response.json();
+  console.log("DATA: ", data);
+  return data.data.posts;
+}
+
+export default async function Home() {
+  const posts = await fetchPosts();
+  console.log(posts);
 
   return (
     <main>
       <div className={styles.homeContainer}>
-        <h1 className={styles.welcomeEffect} style={{ zIndex: 1 }}>
-          Welcome, you are {user ? user.role : "nobody"}
-        </h1>
+        <PostList name="전체게시판" posts={posts} />
       </div>
     </main>
   );

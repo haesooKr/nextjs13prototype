@@ -1,13 +1,13 @@
 datasource db {
-  provider = "cockroachdb"
-  url      = "postgresql://haesoo:t-KcTjUiETMUh2pYz8anfg@haesoo-11951.7tt.cockroachlabs.cloud:26257/haesoodb?schema=public"
+  provider = "mysql"
+  url      = "mysql://haesoo:26765932@localhost:3306/HAESOODB"
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-model user {
+model User {
   id        String     @id @unique @default(uuid())
   name      String
   email     String     @unique
@@ -15,84 +15,84 @@ model user {
   role      String?    @default("user")
   photo     String?    @default("default.png")
   verified  Boolean?   @default(false)
-  posts     post[]
-  postLikes postlike[]
-  comments  comment[]
+  posts     Post[]
+  postLikes PostLike[]
+  comments  Comment[]
   createdAt DateTime?  @default(now())
   updatedAt DateTime?  @updatedAt
 }
 
-model post {
-  id        String     @id @unique @default(uuid())
+model Post {
+  id        Int        @id @default(autoincrement())
   title     String
   content   String
-  user      user       @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
   userId    String
   viewYn    Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @default(now()) @updatedAt
-  postViews postview[]
-  postLikes postlike[]
-  comments  comment[]
-  topicId   String
-  topic     topic      @relation(fields: [topicId], references: [id])
-  postTags  posttag[]
+  postViews PostView[]
+  postLikes PostLike[]
+  comments  Comment[]
+  topicId   Int
+  topic     Topic      @relation(fields: [topicId], references: [id])
+  postTags  PostTag[]
 }
 
-model topic {
-  id    String @id @unique @default(uuid())
+model Topic {
+  id    Int    @id @default(autoincrement())
   name  String @unique
-  posts post[]
+  posts Post[]
 }
 
-model tag {
-  id       String    @id @unique @default(uuid())
+model Tag {
+  id       Int       @id @default(autoincrement())
   name     String    @unique
-  postTags posttag[]
+  postTags PostTag[]
 }
 
-model posttag {
-  postId String
-  tagId  String
-  post   post   @relation(fields: [postId], references: [id])
-  tag    tag    @relation(fields: [tagId], references: [id])
+model PostTag {
+  postId Int
+  tagId  Int
+  post   Post @relation(fields: [postId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
 }
 
-model comment {
-  id        String   @id @unique @default(uuid())
+model Comment {
+  id        Int      @id @default(autoincrement())
   content   String
-  user      user     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  post      post     @relation(fields: [postId], references: [id])
-  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([id, userId, postId])
 }
 
-model postview {
-  postId String
+model PostView {
+  postId Int
   userId String
-  post   post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
 
   @@id([postId, userId])
   @@unique([postId, userId])
 }
 
-model postlike {
-  postId String
+model PostLike {
+  postId Int
   userId String
-  post   post   @relation(fields: [postId], references: [id])
-  user   user   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@id([postId, userId])
   @@unique([postId, userId])
 }
 
-model message {
+model Message {
   code      String // 메시지코드
   language  String // 언어코드
   category  String // 메시지분류코드

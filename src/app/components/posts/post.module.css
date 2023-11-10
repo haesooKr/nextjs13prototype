@@ -1,0 +1,31 @@
+.postsList {
+  flex: 1;
+  height: 100%;
+  border: 1px solid white;
+  padding: 10px 15px;
+  margin: 0 5px;
+}
+
+.postsList h2 {
+  margin: 8px 0;
+}
+
+.postsList li {
+  font-size: 0.9rem;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.post {
+  display: flex;
+  flex-direction: row;
+}
+
+.post p {
+  flex: 1;
+}
+
+.post > div {
+  display: flex;
+  flex-direction: row;
+}

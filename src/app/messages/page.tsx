@@ -1,6 +1,6 @@
 // Server Rendering Message
 
-import { message } from "@prisma/client";
+import { Message } from "@prisma/client";
 
 async function fetchMessages() {
   const url = "http://localhost:3000/api/unprotected/getMessage";
@@ -21,7 +21,7 @@ export default async function AllMessagesPage() {
 
       <ul>
         {messages &&
-          messages.map((message: message) => {
+          messages.map((message: Message) => {
             return (
               <>
                 <h1>Message: </h1>
