@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
     const data = LoginUserSchema.parse(body);
 
     const user = await prisma.user.findUnique({
-      where: { email: data.email },
+      where: { id: data.id },
     });
 
     if (!user || !(await compare(data.password, user.password))) {
-      return getNextResponse(401, "Invalid email or password");
+      return getNextResponse(400, "Invalid email or password");
     }
 
     const ACCESS_TOKEN_SECRET = new TextEncoder().encode(
@@ -78,19 +78,9 @@ export async function POST(req: NextRequest) {
       refreshTokenMaxAge
     );
 
-    const response = new NextResponse(
-      JSON.stringify({
-        status: "success",
-        user: {
-          role: user.role,
-          name: user.name,
-        },
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const response = getNextResponse(200, "login successfully", {
+      user: { ...user, password: undefined },
+    });
 
     await Promise.all([
       response.cookies.set(accessTokenCookieOptions),

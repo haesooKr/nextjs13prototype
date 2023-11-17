@@ -7,6 +7,7 @@ export async function middleware(req: NextRequest) {
   console.log("미들웨어 호출");
   if (
     req.nextUrl.pathname.startsWith("/api/auth/login") ||
+    req.nextUrl.pathname.startsWith("/api/auth/register") ||
     req.nextUrl.pathname.includes("unprotected")
   ) {
     return NextResponse.next();
@@ -29,8 +30,10 @@ export async function middleware(req: NextRequest) {
 
   let ACTVerfiy: any;
   let RFTVerify: any;
+  let userId: any;
 
   if (req.nextUrl.pathname.startsWith("/api")) {
+    console.log("LOGIN CHECK");
     if (req.cookies.has("act")) {
       accessToken = req.cookies.get("act")?.value;
     }
@@ -40,6 +43,7 @@ export async function middleware(req: NextRequest) {
     }
 
     if (!accessToken && !refreshToken) {
+      console.log("Token 없음");
       const response = getNextResponse(401, "unauthorized");
       return response;
     }
@@ -49,6 +53,12 @@ export async function middleware(req: NextRequest) {
         sub: string;
         jti: string;
       }>(accessToken, getEnvVariable("ACCESS_TOKEN_SECRET"));
+
+      if (ACTVerfiy.sub) {
+        console.log("ACTVerfiy: ", userId);
+        userId = ACTVerfiy.sub;
+        console.log("ACTVerfiy: ", userId);
+      }
     }
 
     if (refreshToken) {
@@ -56,20 +66,34 @@ export async function middleware(req: NextRequest) {
         sub: string;
         jti: string;
       }>(refreshToken, getEnvVariable("REFRESH_TOKEN_SECRET"));
+
+      if (RFTVerify.sub) {
+        console.log("RFTVerify: ", userId);
+        userId = RFTVerify.sub;
+        console.log("RFTVerify: ", userId);
+      }
+    }
+
+    const requestHeaderOption = new Headers(req.headers);
+    if (userId && userId != "") {
+      requestHeaderOption.set("x-user", userId);
     }
 
     if (ACTVerfiy && ACTVerfiy.verified && RFTVerify && RFTVerify.verified) {
-      console.log("Verfieid");
-      return NextResponse.next();
+      return NextResponse.next({
+        request: {
+          headers: requestHeaderOption,
+        },
+      });
     } else if (ACTVerfiy && ACTVerfiy.verified) {
       console.log("RFT 재발급");
-      return issueNewRefreshToken(tokens, req);
+      return issueNewRefreshToken(tokens, userId, requestHeaderOption, req);
     } else if (RFTVerify && RFTVerify.verified) {
       console.log("RFT REDIS Verfiy 실패");
       const RftRedis = await redisCheck(req, RFTVerify.jti);
       if (RftRedis) {
         console.log("ACT 재발급");
-        return issueNewAccessToken(tokens, req);
+        return issueNewAccessToken(tokens, userId, requestHeaderOption, req);
       } else {
         console.log("Destory all cookies");
         return destroyAllCookies(req);
@@ -79,6 +103,7 @@ export async function middleware(req: NextRequest) {
       return destroyAllCookies(req);
     }
   } else {
+    console.log("LOGIN USER 없음");
     const url =
       req.nextUrl.origin +
       "/login?callbackUrl=" +
@@ -105,7 +130,12 @@ async function redisCheck(req: NextRequest, jti: string) {
   return true;
 }
 
-const issueNewRefreshToken = async (tokens: any, req: NextRequest) => {
+const issueNewRefreshToken = async (
+  tokens: any,
+  userId: string,
+  headerOption: any,
+  req: NextRequest
+) => {
   const REFRESH_TOKEN_SECRET = new TextEncoder().encode(
     getEnvVariable("REFRESH_TOKEN_SECRET")
   );
@@ -114,7 +144,7 @@ const issueNewRefreshToken = async (tokens: any, req: NextRequest) => {
   const refreshTokenUUID = uuidv4();
   const refreshToken = await signJWT(
     REFRESH_TOKEN_SECRET,
-    { sub: tokens.accessToken.sub, jti: refreshTokenUUID },
+    { sub: userId, jti: refreshTokenUUID },
     { exp: `${REFRESH_TOKEN_EXPIRY}m` }
   );
 
@@ -137,19 +167,26 @@ const issueNewRefreshToken = async (tokens: any, req: NextRequest) => {
     },
     body: JSON.stringify({
       key: refreshTokenUUID,
-      value: tokens.accessToken.sub,
+      value: userId,
       secondsToken: "EX",
       seconds: refreshTokenMaxAge,
     }),
   });
 
-  const response = NextResponse.next();
+  const response = NextResponse.next({
+    headers: headerOption,
+  });
   response.cookies.set(refreshTokenCookieOptions);
 
   return response;
 };
 
-const issueNewAccessToken = async (tokens: any, req: NextRequest) => {
+const issueNewAccessToken = async (
+  tokens: any,
+  userId: string,
+  headerOption: any,
+  req: NextRequest
+) => {
   const ACCESS_TOKEN_SECRET = new TextEncoder().encode(
     getEnvVariable("ACCESS_TOKEN_SECRET")
   );
@@ -158,7 +195,7 @@ const issueNewAccessToken = async (tokens: any, req: NextRequest) => {
   const accessTokenUUID = uuidv4();
   const accessToken = await signJWT(
     ACCESS_TOKEN_SECRET,
-    { sub: tokens.refreshToken.sub, jti: accessTokenUUID },
+    { sub: userId, jti: accessTokenUUID },
     { exp: `${ACCESS_TOKEN_EXPIRY}m` }
   );
   const accessTokenMaxAge = parseInt(ACCESS_TOKEN_EXPIRY);
@@ -180,12 +217,14 @@ const issueNewAccessToken = async (tokens: any, req: NextRequest) => {
     },
     body: JSON.stringify({
       key: accessTokenUUID,
-      value: tokens.accessToken.sub,
+      value: userId,
       secondsToken: "EX",
       seconds: accessTokenMaxAge,
     }),
   });
-  const response = NextResponse.next();
+  const response = NextResponse.next({
+    headers: headerOption,
+  });
   response.cookies.set(accessTokenCookieOptions);
 
   return response;

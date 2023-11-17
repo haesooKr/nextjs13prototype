@@ -2,6 +2,9 @@ import { z } from "zod";
 
 export const RegisterUserSchema = z
   .object({
+    id: z
+      .string({ required_error: "Id is required" })
+      .min(4, "Id should be longer than 4 characters"),
     name: z
       .string({
         required_error: "Name is required",
@@ -33,11 +36,11 @@ export const RegisterUserSchema = z
   });
 
 export const LoginUserSchema = z.object({
-  email: z
+  id: z
     .string({
-      required_error: "Email is required",
+      required_error: "Id is required",
     })
-    .min(1, "Email is required"),
+    .min(1, "Id is required"),
   password: z
     .string({
       required_error: "Password is required",

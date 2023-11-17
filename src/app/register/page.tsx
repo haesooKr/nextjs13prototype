@@ -3,10 +3,13 @@
 import React, { useState } from "react";
 import styles from "./register.module.css";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import responseHandler from "@/lib/response";
 
 export default function RegisterPage() {
   const router = useRouter();
 
+  const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,20 +21,51 @@ export default function RegisterPage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, email, password, passwordConfirm }),
+      body: JSON.stringify({ id, name, email, password, passwordConfirm }),
     });
 
     const data = await res.json();
-    if (data.user) {
-      console.log(data.user);
-    } else {
-      alert(data.message);
-    }
+    console.log(data);
+    await responseHandler(data, router, {
+      success: () => {
+        router.push("/login");
+        toast("User created", {
+          icon: "✅",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+      },
+      fail: () => {
+        const errors = Object.keys(data.error.fieldErrors);
+        for (let error of errors) {
+          console.log(data.error.fieldErrors[error]);
+          toast(data.error.fieldErrors[error][0], {
+            icon: "⛔",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+        }
+      },
+    });
   };
 
   return (
     <div className={styles.registerContainer}>
       <form className={styles.registerBox} onSubmit={(e) => e.preventDefault()}>
+        <input
+          type="text"
+          id="id"
+          name="id"
+          placeholder="id"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+        />
         <input
           type="email"
           id="email"

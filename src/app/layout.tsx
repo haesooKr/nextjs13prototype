@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import Navigation from "./components/layout/navigation";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 const font = localFont({
   src: "../../public/font/DNF.otf",
@@ -23,6 +24,7 @@ export default function RootLayout({
         <Navigation />
         <div className="main">{children}</div>
         <footer>Footer</footer>
+        <Toaster position="bottom-center" reverseOrder={false} />
       </body>
     </html>
   );

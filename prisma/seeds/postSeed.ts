@@ -53,6 +53,13 @@ const postSeed = async () => {
         userId: "admin",
         topicId: 8,
       },
+      {
+        id: 8,
+        title: "LIMS3 TEST",
+        content: `<p><img src="/image_1.png"></p><p><br></p><p><span style="font-size: 30px;">림스테스트입니다.</span></p>`,
+        userId: "admin",
+        topicId: 7,
+      },
     ];
 
     console.log("Seeding posts...");

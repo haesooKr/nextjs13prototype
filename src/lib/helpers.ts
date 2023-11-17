@@ -19,7 +19,7 @@ export function getEnvVariable(key: EnvVariableKey): string {
   return value;
 }
 
-type statusCode = "success" | "error" | "fail" | "unauthorized";
+type statusCode = "success" | "error" | "fail" | "unauthorized" | "not-found";
 
 export interface JSONResponse {
   status: statusCode;
@@ -41,6 +41,8 @@ export function getNextResponse(
           ? status < 500
             ? status === 401
               ? "unauthorized"
+              : status === 404
+              ? "not-found"
               : "fail"
             : "error"
           : "success",

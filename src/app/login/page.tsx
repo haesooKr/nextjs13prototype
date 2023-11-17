@@ -4,12 +4,14 @@ import React, { useEffect, useState } from "react";
 import styles from "./login.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import useAuthStore from "@/lib/zustand/useAuthStore";
+import responseHandler from "@/lib/response";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const { login, logout } = useAuthStore();
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
 
   const searchParams = useSearchParams();
@@ -33,27 +35,45 @@ export default function LoginPage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ id, password }),
     });
 
     const data = await res.json();
-    if (data.user) {
-      login(data.user);
-      router.push(url);
-    } else {
-      alert("Login Fail");
-    }
+    await responseHandler(data, router, {
+      success: () => {
+        login(data.data.user);
+        router.push("/");
+        toast("Welcome Back!", {
+          icon: "✅",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+      },
+      fail: () => {
+        toast("Wrong ID / Password", {
+          icon: "⛔",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+      },
+    });
   };
 
   return (
     <div className={styles.loginContainer}>
       <form className={styles.loginBox} onSubmit={(e) => e.preventDefault()}>
         <input
-          id="email"
-          name="email"
-          placeholder="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="text"
+          name="id"
+          placeholder="id"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
         />
         <input
           type="password"

@@ -13,6 +13,15 @@
   align-self: center;
 }
 
+.navContainer h2:hover {
+  cursor: pointer;
+  color: rgb(235, 235, 235);
+}
+
+.navContainer h2:active {
+  color: white;
+}
+
 .menuBtn {
   height: 30px;
   width: 30px;

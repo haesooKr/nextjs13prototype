@@ -7,6 +7,6 @@
 4. global.css에 flex layout 참고.
 
 [] ReponseHandler 모두 적용 messages/management/page.tsx에 있음.
-
+[] writePost를 포함한 로딩 화면 만들기 (https://velog.io/@jay/Next.js-13-master-course-loading-error-UI 참고)
 
 

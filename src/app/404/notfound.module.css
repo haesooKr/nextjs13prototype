@@ -1,0 +1,9 @@
+.notFound {
+  justify-content: center;
+  align-items: center;
+}
+
+.notFound a {
+  color: white;
+  text-decoration: underline;
+}

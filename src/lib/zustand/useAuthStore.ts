@@ -1,10 +1,10 @@
-import { user } from "@prisma/client";
+import { User } from "@prisma/client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface AuthState {
-  user: null | user;
-  login: (user: user) => void;
+  user: null | User;
+  login: (user: User) => void;
   logout: () => void;
 }
 
@@ -13,11 +13,15 @@ const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       login: (user: any) => set({ user: user }),
-      logout: () => set({ user: null }),
+      logout: async () => {
+        await fetch("/api/auth/logout");
+        set({ user: null });
+      },
     }),
     {
       name: "auth",
       onRehydrateStorage: (state) => {
+        console.log(state);
         console.log("hydration starts");
 
         // optional
